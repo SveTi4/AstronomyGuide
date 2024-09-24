@@ -1,8 +1,7 @@
 package com.example.astronomyguide.viewmodel
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -19,39 +18,49 @@ class NewsViewModel : ViewModel() {
         "Новость 7", "Новость 8", "Новость 9", "Новость 10"
     )
 
-    // Map для хранения количества лайков для каждой новости
     private val newsMap = mutableMapOf<String, NewsItem>().apply {
         _newsList.forEach { news ->
             this[news] = NewsItem(news, 0)
         }
     }
 
-    private val _newsState = MutableStateFlow(newsMap.values.toList().take(4))
-    val newsState = _newsState.asStateFlow()
+    // Состояние новостей как список для Compose
+    val newsState = mutableStateListOf<NewsItem>()
 
     init {
+        resetNews()
+        startNewsUpdater()
+    }
+
+    private fun resetNews() {
+        newsState.clear()
+        newsState.addAll(newsMap.values.toList().take(4))
+    }
+
+    private fun startNewsUpdater() {
         CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                delay(5000) // Обновление каждые 5 секунд
+                delay(5000) // Обновление одной случайной новости каждые 5 секунд
                 updateRandomNews()
             }
         }
     }
 
     private fun updateRandomNews() {
-        val currentNews = _newsState.value.toMutableList()
-        val indexToUpdate = Random.nextInt(0, currentNews.size)
-        val randomNews = _newsList.random()
-        currentNews[indexToUpdate] = newsMap[randomNews] ?: NewsItem(randomNews, 0)
-        _newsState.value = currentNews
+        CoroutineScope(Dispatchers.Main).launch {
+            val indexToUpdate = Random.nextInt(0, newsState.size)
+            var randomNews: String
+
+            do {
+                randomNews = _newsList.random()
+            } while (newsState.any { it.text == randomNews })
+
+            newsState[indexToUpdate] = newsMap[randomNews]?.copy() ?: NewsItem(randomNews, 0)
+        }
     }
 
     fun incrementLikes(index: Int) {
-        val currentNews = _newsState.value[index]
-        currentNews.likes += 1
-        newsMap[currentNews.text] = currentNews // Обновляем Map
-        _newsState.value = _newsState.value.toMutableList().apply {
-            this[index] = currentNews
-        }
+        newsState[index] = newsState[index].copy(likes = newsState[index].likes + 1)
+        newsMap[newsState[index].text]?.likes = newsState[index].likes
     }
 }
