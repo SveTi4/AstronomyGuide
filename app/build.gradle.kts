@@ -74,4 +74,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    // OpenGL ES
+    implementation("androidx.appcompat:appcompat:1.3.1")
+    implementation("androidx.core:core-ktx:1.6.0")
 }
