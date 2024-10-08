@@ -6,49 +6,46 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
+/**
+ * Класс Cube представляет собой 3D-объект в виде куба для отрисовки с использованием OpenGL ES 2.0.
+ * Куб состоит из вершин и граней, каждая вершина имеет свои координаты и цвет.
+ *
+ * Основные этапы:
+ * - Инициализация вершин, индексов и цветов куба.
+ * - Компиляция шейдеров и создание программы OpenGL.
+ * - Метод {@link #draw(float[])} для отрисовки куба с использованием переданной матрицы преобразования.
+ */
 class Cube {
 
-    // Координаты вершин куба (x, y, z)
     private val vertexCoords = floatArrayOf(
-        // Передняя грань
-        -1f,  1f,  1f,   // Верхний левый передний угол (0)
-        -1f, -1f,  1f,   // Нижний левый передний угол (1)
-        1f, -1f,  1f,   // Нижний правый передний угол (2)
-        1f,  1f,  1f,   // Верхний правый передний угол (3)
-        // Задняя грань
-        -1f,  1f, -1f,   // Верхний левый задний угол (4)
-        -1f, -1f, -1f,   // Нижний левый задний угол (5)
-        1f, -1f, -1f,   // Нижний правый задний угол (6)
-        1f,  1f, -1f    // Верхний правый задний угол (7)
+        -1f,  1f,  1f,
+        -1f, -1f,  1f,
+        1f, -1f,  1f,
+        1f,  1f,  1f,
+        -1f,  1f, -1f,
+        -1f, -1f, -1f,
+        1f, -1f, -1f,
+        1f,  1f, -1f
     )
 
-    // Индексы вершин для отрисовки граней куба
     private val indexOrder = shortArrayOf(
-        // Передняя грань
         0, 1, 2, 0, 2, 3,
-        // Правая грань
         3, 2, 6, 3, 6, 7,
-        // Задняя грань
         7, 6, 5, 7, 5, 4,
-        // Левая грань
         4, 5, 1, 4, 1, 0,
-        // Верхняя грань
         4, 0, 3, 4, 3, 7,
-        // Нижняя грань
         1, 5, 6, 1, 6, 2
     )
 
-    // Цвета вершин (RGBA)
     private val colorCoords = floatArrayOf(
-        // Каждый цвет соответствует вершине
-        0.5f, 0.5f, 0.5f, 0.6f,  // Вершина 0 - красный
-        0.5f, 0.5f, 0.5f, 0.6f,  // Вершина 1 - зеленый
-        0.5f, 0.5f, 0.5f, 0.6f,  // Вершина 2 - синий
-        0.5f, 0.5f, 0.5f, 0.6f,  // Вершина 3 - желтый
-        0.5f, 0.5f, 0.5f, 0.6f,  // Вершина 4 - пурпурный
-        0.5f, 0.5f, 0.5f, 0.6f,  // Вершина 5 - бирюзовый
-        0.5f, 0.5f, 0.5f, 0.6f,  // Вершина 6 - белый
-        0.5f, 0.5f, 0.5f, 0.6f   // Вершина 7 - черный
+        0.5f, 0.5f, 0.5f, 0.6f,
+        0.5f, 0.5f, 0.5f, 0.6f,
+        0.5f, 0.5f, 0.5f, 0.6f,
+        0.5f, 0.5f, 0.5f, 0.6f,
+        0.5f, 0.5f, 0.5f, 0.6f,
+        0.5f, 0.5f, 0.5f, 0.6f,
+        0.5f, 0.5f, 0.5f, 0.6f,
+        0.5f, 0.5f, 0.5f, 0.6f
     )
 
     private val vertexBuffer: FloatBuffer =
@@ -78,7 +75,6 @@ class Cube {
                 position(0)
             }
 
-    // Шейдеры
     private val vertexShaderCode = """
         attribute vec4 aPosition;
         attribute vec4 aColor;
@@ -101,7 +97,6 @@ class Cube {
     private var program: Int
 
     init {
-        // Компилируем шейдеры и создаём программу
         val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode)
         val fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode)
 
@@ -112,15 +107,18 @@ class Cube {
         }
     }
 
+    /**
+     * Выполняет отрисовку куба с использованием переданной матрицы преобразования.
+     *
+     * @param mvpMatrix Матрица модели-вида-проекции (Model-View-Projection Matrix), применяемая к объекту.
+     */
     fun draw(mvpMatrix: FloatArray) {
         GLES20.glUseProgram(program)
 
-        // Получаем ссылки на атрибуты и униформы
         val positionHandle = GLES20.glGetAttribLocation(program, "aPosition")
         val colorHandle = GLES20.glGetAttribLocation(program, "aColor")
         val mvpMatrixHandle = GLES20.glGetUniformLocation(program, "uMVPMatrix")
 
-        // Устанавливаем матрицу преобразования
         GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0)        // Включаем и устанавливаем координаты вершин
         GLES20.glEnableVertexAttribArray(positionHandle)
         GLES20.glVertexAttribPointer(
@@ -132,7 +130,6 @@ class Cube {
             vertexBuffer
         )
 
-        // Включаем и устанавливаем цвета вершин
         GLES20.glEnableVertexAttribArray(colorHandle)
         GLES20.glVertexAttribPointer(
             colorHandle,
@@ -143,7 +140,6 @@ class Cube {
             colorBuffer
         )
 
-        // Рисуем куб
         GLES20.glDrawElements(
             GLES20.GL_TRIANGLES,
             indexOrder.size,
@@ -151,17 +147,23 @@ class Cube {
             indexBuffer
         )
 
-        // Отключаем атрибуты
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(colorHandle)
     }
 
+    /**
+     * Компилирует шейдер и проверяет наличие ошибок компиляции.
+     *
+     * @param type Тип шейдера (вершинный или фрагментный).
+     * @param shaderCode Код шейдера, который нужно скомпилировать.
+     * @return Идентификатор скомпилированного шейдера.
+     * @throws RuntimeException В случае ошибки компиляции шейдера.
+     */
     private fun loadShader(type: Int, shaderCode: String): Int {
         return GLES20.glCreateShader(type).also { shader ->
             GLES20.glShaderSource(shader, shaderCode)
             GLES20.glCompileShader(shader)
 
-            // Проверка ошибок компиляции
             val compiled = IntArray(1)
             GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0)
             if (compiled[0] == 0) {
