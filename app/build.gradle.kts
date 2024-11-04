@@ -66,6 +66,10 @@ dependencies {
     // Material Design 3 для Compose
     implementation(libs.androidx.material3)
 
+    // Accompanist Pager для реализации свайпов
+    implementation("com.google.accompanist:accompanist-pager:0.32.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
+
     // Тестирование
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
